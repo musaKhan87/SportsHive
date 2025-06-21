@@ -27,13 +27,12 @@ app.use(express.json());
 app.use(
   cors({
     origin: [
-      "http://localhost:5173", // Development
-      "https://your-frontend-domain.com", // Production frontend URL
+      "http://localhost:5173",
+      "https://sportshive.onrender.com", // ✅ Update this to your frontend domain
     ],
     credentials: true,
   })
 );
-
 
 // Routes
 app.use("/api/auth", authRouter);
@@ -48,24 +47,10 @@ app.use("/api/dashboard", dashboardRouter);
 app.use("/api/stats", statsRouter);
 app.use("/api/search", searchRouter);
 
-
-
 // Health check
 app.get("/api/health", (req, res) => {
   res.json({ status: "OK", timestamp: new Date().toISOString() });
 });
-
-// Error handling middleware
-app.use((err, req, res, next) => {
-    console.error(err.stack);
-    res.status(500).json({ message: "Something went wrong!" });
-});  
-
-// 404 handler
-app.use("*", (req, res) => {
-    res.status(404).json({ message: "Route not found" });
-});
-
 
 // ---------------------Deployment----------------
 const __dirname1 = path.resolve();
@@ -82,4 +67,19 @@ if (process.env.NODE_ENV === "production") {
   });
 }
 
-app.listen(PORT, console.log("Server is running on port ", PORT));
+// 🔻 Moved error handlers BELOW the deployment logic
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ message: "Something went wrong!" });
+});
+
+// 404 handler — now placed last
+app.use("*", (req, res) => {
+  res.status(404).json({ message: "Route not found" });
+});
+
+app.listen(PORT, () => {
+  console.log("Server is running on port ", PORT);
+});
